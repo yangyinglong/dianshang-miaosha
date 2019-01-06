@@ -2,13 +2,14 @@ package cn.supcon.validator;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ValidationResult {
     // 是否有错误
-    private boolean hasErrors;
+    private boolean hasErrors = false;
     // 存放错误信息的map
-    private Map<String,String > errorMsgMap;
+    private Map<String,String > errorMsgMap = new HashMap<>();
 
     public boolean isHasErrors() {
         return hasErrors;
