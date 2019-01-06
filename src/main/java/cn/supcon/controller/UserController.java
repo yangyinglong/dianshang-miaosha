@@ -7,6 +7,9 @@ import cn.supcon.error.EmBusinessError;
 import cn.supcon.response.CommonReturnType;
 import cn.supcon.service.UserService;
 import cn.supcon.service.model.UserModel;
+import com.alibaba.druid.util.StringUtils;
+import com.sun.xml.internal.xsom.impl.Ref;
+import org.apache.tomcat.util.security.MD5Encoder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,6 +21,7 @@ import java.util.Random;
 
 @Controller("user")
 @RequestMapping("/user")
+@CrossOrigin
 public class UserController extends BaseController{
 
     @Autowired
@@ -28,7 +32,7 @@ public class UserController extends BaseController{
 
 
     // 用户获取opt短信借口
-    @RequestMapping("/getotp")
+    @RequestMapping(value = "/getotp", method = {RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
     public CommonReturnType getOtp(@RequestParam(name = "telphone") String telphone) {
         // 按照一定的规则生成OTP验证码
@@ -43,8 +47,32 @@ public class UserController extends BaseController{
         System.out.println("telphone = " + telphone + " & otpCode = " + otpCode);
 
         return CommonReturnType.create(null);
+    }
 
-
+    // 用户注册
+    @RequestMapping(value = "/register", method = {RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
+    @ResponseBody
+    public CommonReturnType register(@RequestParam(name = "telphone")String telphone,
+                                     @RequestParam(name = "otpCode")String otpCode,
+                                     @RequestParam(name = "name")String name,
+                                     @RequestParam(name = "gender")Integer gender,
+                                     @RequestParam(name = "age")Integer age,
+                                     @RequestParam(name = "password")String  password) throws BusinessException {
+        // 验证手机号码和对应的otpCode是否相符合
+        String inSessionOtpCode = (String)httpServletRequest.getSession().getAttribute(telphone);
+        if (!StringUtils.equals(inSessionOtpCode, otpCode)) {
+            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR, "短信验证码错误！");
+        }
+        // 用户的注册流程
+        UserModel userModel = new UserModel();
+        userModel.setName(name);
+        userModel.setGender(gender);
+        userModel.setAge(age);
+        userModel.setTelphone(telphone);
+        userModel.setRegisterModel("byPhone");
+        userModel.setEncrptPassword(MD5Encoder.encode(password.getBytes()));
+        userService.register(userModel);
+        return CommonReturnType.create(null);
     }
 
     @RequestMapping("/get")

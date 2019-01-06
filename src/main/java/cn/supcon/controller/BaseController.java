@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BaseController {
+    public static final String CONTENT_TYPE_FORMED = "application/x-www-form-urlencoded";
+
     // 定义exceptionHandler 解决未被 controller 层吸收的 exception
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.OK)
