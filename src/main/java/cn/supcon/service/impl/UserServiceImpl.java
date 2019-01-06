@@ -12,6 +12,7 @@ import org.apache.catalina.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.beans.Transient;
@@ -50,10 +51,28 @@ public class UserServiceImpl implements UserService {
         }
 
         UserDO userDO = convertFromModel(userModel);
-        userDOMapper.insertSelective(userDO);
+        try {
+            userDOMapper.insertSelective(userDO);
+        } catch (DuplicateKeyException e) {
+            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR, "手机号已注册！");
+        }
+        userModel.setId(userDO.getId());
         UserPasswordDO userPasswordDO = convertPasswordFromModel(userModel);
         userPasswordDOMapper.insertSelective(userPasswordDO);
-        return;
+    }
+
+    @Override
+    public UserModel validateLogin(String telphone, String encrptPassword) throws BusinessException {
+        UserDO userDO = userDOMapper.selectByTelphone(telphone);
+        if (userDO == null) {
+            throw new BusinessException(EmBusinessError.USER_LOGIN_FAIL);
+        }
+        UserPasswordDO userPasswordDO = userPasswordDOMapper.selectByUserId(userDO.getId());
+        UserModel userModel = convertFromDataObject(userDO, userPasswordDO);
+        if (!StringUtils.equals(encrptPassword, userModel.getEncrptPassword())) {
+            throw new BusinessException(EmBusinessError.USER_LOGIN_FAIL);
+        }
+        return userModel;
     }
 
     private UserModel convertFromDataObject(UserDO userDO, UserPasswordDO userPasswordDO) {
@@ -83,7 +102,7 @@ public class UserServiceImpl implements UserService {
         }
         UserPasswordDO userPasswordDO = new UserPasswordDO();
         userPasswordDO.setEncrptPassword(userModel.getEncrptPassword());
-        userPasswordDO.setId(userModel.getId());
+        userPasswordDO.setUserId(userModel.getId());
         return userPasswordDO;
     }
 }

@@ -2,8 +2,10 @@ package cn.supcon.error;
 
 public enum EmBusinessError implements CommonError {
     PARAMETER_VALIDATION_ERROR(10001, "参数不合法！"),
+    UNKNOWN_ERROR(10002, "未知错误！"),
+    // 2开头的是用户相关的错误
     USER_NOT_EXIST(20001, "用户不存在！"),
-    UNKNOWN_ERROR(10002, "未知错误！")
+    USER_LOGIN_FAIL(20002, "用户手机号或密码错误！"),
     ;
 
 

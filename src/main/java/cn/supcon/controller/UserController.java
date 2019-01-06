@@ -8,20 +8,22 @@ import cn.supcon.response.CommonReturnType;
 import cn.supcon.service.UserService;
 import cn.supcon.service.model.UserModel;
 import com.alibaba.druid.util.StringUtils;
-import com.sun.xml.internal.xsom.impl.Ref;
-import org.apache.tomcat.util.security.MD5Encoder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import sun.misc.BASE64Encoder;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
 
 @Controller("user")
 @RequestMapping("/user")
-@CrossOrigin
+@CrossOrigin(allowCredentials="true",allowedHeaders="*")            // 跨域请求的接收
 public class UserController extends BaseController{
 
     @Autowired
@@ -57,7 +59,7 @@ public class UserController extends BaseController{
                                      @RequestParam(name = "name")String name,
                                      @RequestParam(name = "gender")Integer gender,
                                      @RequestParam(name = "age")Integer age,
-                                     @RequestParam(name = "password")String  password) throws BusinessException {
+                                     @RequestParam(name = "password")String  password) throws BusinessException, UnsupportedEncodingException, NoSuchAlgorithmException {
         // 验证手机号码和对应的otpCode是否相符合
         String inSessionOtpCode = (String)httpServletRequest.getSession().getAttribute(telphone);
         if (!StringUtils.equals(inSessionOtpCode, otpCode)) {
@@ -70,10 +72,29 @@ public class UserController extends BaseController{
         userModel.setAge(age);
         userModel.setTelphone(telphone);
         userModel.setRegisterModel("byPhone");
-        userModel.setEncrptPassword(MD5Encoder.encode(password.getBytes()));
+        userModel.setEncrptPassword(this.EncodeByMD5(password));
         userService.register(userModel);
         return CommonReturnType.create(null);
     }
+
+    @RequestMapping(value = "/login", method = {RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
+    @ResponseBody
+    public CommonReturnType login(@RequestParam(name = "telphone")String telphone,
+                                  @RequestParam(name = "password")String password) throws BusinessException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        // 入参校验
+        if (StringUtils.isEmpty(telphone)
+            || StringUtils.isEmpty(password)) {
+            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR);
+        }
+        // 用户登录服务，验证密码是否正确
+        UserModel userModel = userService.validateLogin(telphone, this.EncodeByMD5(password));
+        // 将登录凭证加入到用户登录成功的session中
+        this.httpServletRequest.getSession().setAttribute("IS_LOGIN", true);
+        this.httpServletRequest.getSession().setAttribute("LOGIN_USER", userModel);
+
+        return CommonReturnType.create(null);
+    }
+
 
     @RequestMapping("/get")
     @ResponseBody
@@ -97,5 +118,15 @@ public class UserController extends BaseController{
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(userModel, userVO);
         return userVO;
+    }
+
+    private String EncodeByMD5(String str) throws UnsupportedEncodingException, NoSuchAlgorithmException {
+        // 确定加密方式
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        BASE64Encoder base64Encoder = new BASE64Encoder();
+        // 加密字符串
+        String newStr = base64Encoder.encode(md5.digest(str.getBytes("utf-8")));
+        return newStr;
+
     }
 }
