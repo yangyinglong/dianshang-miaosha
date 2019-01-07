@@ -13,6 +13,7 @@ import cn.supcon.validator.ValidatorImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.Transient;
 import java.math.BigDecimal;
@@ -76,6 +77,24 @@ public class ItemServiceImpl implements ItemService {
         // 将 dataObject -> model
         ItemModel itemModel = this.convertModelFromDataObject(itemDO, itemStockDO);
         return itemModel;
+    }
+
+    @Override
+    @Transactional
+    public boolean decreaseStock(Integer itemId, Integer amount) {
+        int affectedRow = itemStockDOMapper.decreaseStock(itemId, amount);
+        if (affectedRow > 0) {
+            // 更新库存成功
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public void increaseSales(Integer itemId, Integer amount) {
+        itemDOMapper.increaseSales(itemId, amount);
     }
 
     private ItemDO convertItemDoFromItemModel(ItemModel itemModel) {

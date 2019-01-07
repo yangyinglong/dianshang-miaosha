@@ -33,3 +33,23 @@ CREATE TABLE `item_stock` (
   `item_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+CREATE TABLE `order_info` (
+  `id` varchar(32) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `item_price` double NOT NULL DEFAULT '0',
+  `amount` int(11) NOT NULL DEFAULT '0',
+  `order_price` double NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+CREATE TABLE `sequence_info` (
+  `name` varchar(32) NOT NULL,
+  `current_value` int(11) NOT NULL DEFAULT '0',
+  `step` int(11) NOT NULL DEFAULT '1',
+  `max_value` int(11) NOT NULL DEFAULT '999999',
+  PRIMARY KEY (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1；
