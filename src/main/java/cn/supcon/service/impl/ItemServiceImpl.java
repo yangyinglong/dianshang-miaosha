@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.beans.Transient;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -56,7 +57,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemModel> listItem() {
-        return null;
+        List<ItemDO> itemDOList = itemDOMapper.listItem();
+        List<ItemModel> itemModelList = itemDOList.stream().map(itemDO -> {
+            ItemStockDO itemStockDO = itemStockDOMapper.selectByItemId(itemDO.getId());
+            ItemModel itemModel = this.convertModelFromDataObject(itemDO,itemStockDO);
+            return itemModel;
+        }).collect(Collectors.toList());
+        return itemModelList;
     }
 
     @Override
@@ -94,6 +101,7 @@ public class ItemServiceImpl implements ItemService {
     private ItemModel convertModelFromDataObject(ItemDO itemDO, ItemStockDO itemStockDO) {
         ItemModel itemModel = new ItemModel();
         BeanUtils.copyProperties(itemDO, itemModel);
+        // todo 数据转化的时候出现了错误
         itemModel.setPrice(new BigDecimal(itemDO.getPrice()));
         itemModel.setStock(itemStockDO.getStock());
         return itemModel;
