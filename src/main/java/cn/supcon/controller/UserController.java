@@ -74,7 +74,8 @@ public class UserController extends BaseController{
         userModel.setRegisterModel("byPhone");
         userModel.setEncrptPassword(this.EncodeByMD5(password));
         userService.register(userModel);
-        return CommonReturnType.create(null);
+        UserVO userVO = convertFromModel(userModel);
+        return CommonReturnType.create(userVO);
     }
 
     @RequestMapping(value = "/login", method = {RequestMethod.POST}, consumes = {CONTENT_TYPE_FORMED})
@@ -92,7 +93,8 @@ public class UserController extends BaseController{
         this.httpServletRequest.getSession().setAttribute("IS_LOGIN", true);
         this.httpServletRequest.getSession().setAttribute("LOGIN_USER", userModel);
 
-        return CommonReturnType.create(null);
+        UserVO userVO = convertFromModel(userModel);
+        return CommonReturnType.create(userVO);
     }
 
 

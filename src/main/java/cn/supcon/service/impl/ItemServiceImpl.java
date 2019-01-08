@@ -7,7 +7,9 @@ import cn.supcon.dto.ItemStockDO;
 import cn.supcon.error.BusinessException;
 import cn.supcon.error.EmBusinessError;
 import cn.supcon.service.ItemService;
+import cn.supcon.service.PromoService;
 import cn.supcon.service.model.ItemModel;
+import cn.supcon.service.model.PromoModel;
 import cn.supcon.validator.ValidationResult;
 import cn.supcon.validator.ValidatorImpl;
 import org.springframework.beans.BeanUtils;
@@ -31,6 +33,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Autowired
     private ItemStockDOMapper itemStockDOMapper;
+
+    @Autowired
+    private PromoService promoService;
 
     @Override
     @Transient
@@ -76,6 +81,11 @@ public class ItemServiceImpl implements ItemService {
         ItemStockDO itemStockDO = itemStockDOMapper.selectByItemId(itemDO.getId());
         // 将 dataObject -> model
         ItemModel itemModel = this.convertModelFromDataObject(itemDO, itemStockDO);
+        // 获取秒杀活动信息，模型聚合
+        PromoModel promoModel = promoService.getPromoByItemId(itemModel.getId());
+        if (promoModel != null && promoModel.getStatus() != 3) {
+            itemModel.setPromoModel(promoModel);
+        }
         return itemModel;
     }
 
