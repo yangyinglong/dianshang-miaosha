@@ -34,17 +34,16 @@ CREATE TABLE `item_stock` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-
 CREATE TABLE `order_info` (
   `id` varchar(32) NOT NULL,
   `user_id` int(11) NOT NULL,
   `item_id` int(11) NOT NULL,
+  `promo_id` int(11) NOT NULL DEFAULT '0',
   `item_price` double NOT NULL DEFAULT '0',
   `amount` int(11) NOT NULL DEFAULT '0',
   `order_price` double NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
+) ENGINE=InnoDB DEFAULT CHARSET=latin1；
 
 CREATE TABLE `sequence_info` (
   `name` varchar(32) NOT NULL,
@@ -53,3 +52,13 @@ CREATE TABLE `sequence_info` (
   `max_value` int(11) NOT NULL DEFAULT '999999',
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1；
+
+CREATE TABLE `promo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `promo_name` varchar(128) NOT NULL,
+  `start_date` datetime NOT NULL,
+  `end_date` datetime NOT NULL,
+  `item_id` int(11) NOT NULL DEFAULT '0',
+  `promo_item_price` double NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1；
